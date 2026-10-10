@@ -4,7 +4,7 @@ import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import { money, fmtDate, toInputDate } from '../utils/format';
-
+import { downloadCsv } from '../utils/exportCsv';
 const PAGE_SIZE = 8;
 const STATUSES = ['Pending', 'Active', 'Completed'];
 const emptyForm = { name: '', client: '', status: 'Pending', fee: '', deadline: '' };
@@ -151,7 +151,7 @@ export default function Projects() {
   useEffect(() => {
     const t = setTimeout(load, 300);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [filters]);
 
   const setFilter = (key, value) => {
@@ -174,20 +174,43 @@ export default function Projects() {
     load();
   };
 
+  const exportCsv = () => {
+    downloadCsv(
+      `projects-${new Date().toISOString().slice(0, 10)}.csv`,
+      [
+        { label: 'Name', value: (p) => p.name },
+        { label: 'Client', value: (p) => p.client?.name },
+        { label: 'Status', value: (p) => p.status },
+        { label: 'Fee', value: (p) => money(p.fee) },
+        { label: 'Deadline', value: (p) => fmtDate(p.deadline) },
+      ],
+      projects
+    );
+  };
+
   const visible = projects.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <>
-      <div className="page-head">
+            <div className="page-head">
         <h2>Projects</h2>
-        <button
-          className="btn btn-sm"
-          onClick={() => setModal({ project: null })}
-          disabled={clients.length === 0}
-          title={clients.length === 0 ? 'Add a client first' : ''}
-        >
-          + Add project
-        </button>
+        <div className="head-actions">
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={exportCsv}
+            disabled={projects.length === 0}
+          >
+            Export CSV
+          </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => setModal({ project: null })}
+            disabled={clients.length === 0}
+            title={clients.length === 0 ? 'Add a client first' : ''}
+          >
+            + Add project
+          </button>
+        </div>
       </div>
 
       {clients.length === 0 && (

@@ -196,3 +196,4 @@ td.actions { display: flex; gap: 6px; justify-content: flex-end; }
 @media (max-width: 520px) {
   .charts { grid-template-columns: 1fr; }
 }
+.head-actions { display: flex; gap: 8px; }

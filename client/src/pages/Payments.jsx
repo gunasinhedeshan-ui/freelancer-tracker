@@ -4,7 +4,7 @@ import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import { money, fmtDate, toInputDate } from '../utils/format';
-
+import { downloadCsv } from '../utils/exportCsv';
 const PAGE_SIZE = 8;
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -147,7 +147,7 @@ export default function Payments() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [filters]);
 
   const setFilter = (key, value) => {
@@ -184,6 +184,20 @@ export default function Payments() {
     setModal(null);
     load();
   };
+    const exportCsv = () => {
+    downloadCsv(
+      `payments-${new Date().toISOString().slice(0, 10)}.csv`,
+      [
+        { label: 'Date', value: (p) => toInputDate(p.date) },
+        { label: 'Project', value: (p) => p.project?.name },
+        { label: 'Client', value: (p) => p.project?.client?.name },
+        { label: 'Amount (LKR)', value: (p) => p.amount },
+        { label: 'Status', value: (p) => p.status },
+        { label: 'Note', value: (p) => p.note },
+      ],
+      payments
+    );
+  };
 
   const sum = (status) =>
     payments.filter((p) => p.status === status).reduce((t, p) => t + p.amount, 0);
@@ -192,16 +206,25 @@ export default function Payments() {
 
   return (
     <>
-      <div className="page-head">
+            <div className="page-head">
         <h2>Payments</h2>
-        <button
-          className="btn btn-sm"
-          onClick={() => setModal({ payment: null })}
-          disabled={projects.length === 0}
-          title={projects.length === 0 ? 'Add a project first' : ''}
-        >
-          + Add payment
-        </button>
+        <div className="head-actions">
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={exportCsv}
+            disabled={payments.length === 0}
+          >
+            Export CSV
+          </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => setModal({ payment: null })}
+            disabled={projects.length === 0}
+            title={projects.length === 0 ? 'Add a project first' : ''}
+          >
+            + Add payment
+          </button>
+        </div>
       </div>
 
       {projects.length === 0 && (
